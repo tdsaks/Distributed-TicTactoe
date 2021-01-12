@@ -1,0 +1,177 @@
+import java.io.*;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Client {
+	static final int DEFAULT_PORT = 5000;
+	static final String DEFAULT_IP = "127.0.0.1";
+	
+	public static void main(String args[]) throws IOException{
+		//ArrayList<String> obj = new ArrayList<String>();
+		String name; 
+		Socket socket = null;
+		String server;
+		String stringPort = null;
+		InetAddress serverAddress; 
+		int servPort;
+		Scanner fromKeyboard = new Scanner(System.in);
+		
+		System.out.print("Enter computer name or IP address or press return to use default: ");
+		server = fromKeyboard.nextLine();
+		
+		if (server.length() == 0) {
+			server = DEFAULT_IP;
+		}
+
+		
+		System.out.print("Enter port number or press return to use default:");
+		stringPort = fromKeyboard.nextLine();
+		if (stringPort.length() == 0) {
+			servPort = DEFAULT_PORT;
+		} else {
+			servPort = Integer.parseInt(stringPort);
+		}
+		
+		try { 
+			if (servPort <= 0 || servPort > 65535)
+				throw new NumberFormatException();
+		} catch (NumberFormatException e) {
+			System.out.println("Illegal port number, " + servPort);
+			return;
+		}
+		
+		serverAddress = InetAddress.getByName(server); 
+		
+		
+		try {
+			socket = new Socket(serverAddress, servPort);
+			TicTacData toSend, toReceive = null;
+			
+			System.out.println("Welcome to Number TIC TAC TOE!");
+			
+			System.out.print("Before we begin, please enter your name: ");
+			name = fromKeyboard.nextLine();
+			
+			System.out.println("This is a normal tic tac toe with a little twist!");
+			System.out.println();
+			System.out.println("The person to finish a row with the sum of 15 wins the game!");
+			System.out.println();
+			
+			while(true) {
+				int num, pos;
+				//receiving data to indicate if player is odd/even
+				toReceive = receiveDataFromServer(socket);
+				//TicTacData.getBoard().printBoard(); //testing
+				toReceive.setName(name);
+				System.out.println("Starting new round! " + name);
+				if(toReceive.playerOdd) {
+					System.out.println("You are playing odd. You will play first.");
+					System.out.println();
+					toReceive.printMessage();
+				} else {
+					System.out.println("You are playing even. You will play second. Please wait for your opponent's move.");
+					System.out.println();
+				}
+				
+				while(true) {
+					if(toReceive.yourTurn) {
+						int turn = 0;
+						
+						if(turn > 0) {
+							toReceive = receiveDataFromServer(socket); //most updated play by opponent
+							System.out.println();
+							TicTacData.getBoard().printBoard();
+							
+							toReceive.printMessage();
+							
+							if(TicTacData.gameEnd) {
+								System.out.println("Would you like to play again? Press 1 to play again or press anything else to exit game.");
+								if(fromKeyboard.nextLine() == "1") {
+									break;
+								} else {
+									socket.close();
+								}
+							}
+			
+						}
+						
+						toSend = toReceive;
+						toSend.printMessage();
+						System.out.println("Here are the numbers available for play.");
+						toSend.printRemain(toReceive.playerOdd);
+						
+						System.out.println("Enter the number you would like to place."); //take number
+						num = fromKeyboard.nextInt();
+				
+						System.out.println("Here are the spots available for play");
+						TicTacData.getBoard().printSlots();
+						
+						System.out.println("Enter the number value of the position you would like to place your number."); //take position
+						pos = fromKeyboard.nextInt();
+						
+
+						TicTacData.getBoard().update(pos,num);
+						
+						TicTacData.getBoard().printBoard();
+						
+						if(toSend.playerOdd) {
+							toSend.setOddRemaining(num);
+						} else {
+							toSend.setEvenRemaining(num);
+						}
+						sendDataToServer(socket, toSend);
+						
+	
+						turn++;
+					}
+				}
+			}
+			
+			
+			
+			
+		} catch (ConnectException e) {
+			System.out.println("Connection refused, probably no server running");
+		}
+	}
+	
+	
+	
+	public static void sendDataToServer(Socket clntSock, TicTacData toSend) throws IOException {
+		try {
+			OutputStream os = clntSock.getOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			oos.writeObject(toSend);
+
+		} catch (EOFException e) { 
+			System.out.println("in Send EOFException: goodbye client at " + clntSock.getRemoteSocketAddress()
+					+ " with port# " + clntSock.getPort());
+			clntSock.close(); 
+		} catch (IOException e) {
+			System.out.println("in Send IOException: goodbye client at " + clntSock.getRemoteSocketAddress()
+					+ " with port# " + clntSock.getPort());
+			clntSock.close(); 
+		}
+	}
+	
+	public static TicTacData receiveDataFromServer(Socket clntSock) throws IOException {
+		TicTacData fromClient = null;
+
+		try {
+			InputStream is = clntSock.getInputStream();
+			ObjectInputStream ois = new ObjectInputStream(is);
+			fromClient = (TicTacData) ois.readObject();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (EOFException e) { 
+			System.out.println("in receive EOF: goodbye client ");
+			clntSock.close(); 
+		} catch (IOException e) {
+			System.out.println("in receive IO: goodbye client ");
+			clntSock.close(); 
+		}
+		return fromClient;
+	}
+}
+

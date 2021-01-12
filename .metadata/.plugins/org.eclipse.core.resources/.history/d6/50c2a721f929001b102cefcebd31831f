@@ -1,0 +1,27 @@
+import java.io.*;
+import java.net.*;
+
+public class ServerMultiplayer implements Runnable{
+	
+	public ServerMultiplayer(Socket s1, Socket s2) {
+		
+	}
+	
+	public void run() {
+		try {
+			
+		} catch (EOFException e) { // needed to catch when client is done and closes socket
+			System.out.println("goodbye " + toReceive.getName() + ", the client with IP: " + clientAddress
+					+ " and port# " + port);
+			try {
+				clntSock.close(); // Close the socket. We are done with this client!
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

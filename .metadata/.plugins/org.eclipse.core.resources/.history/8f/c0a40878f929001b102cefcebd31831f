@@ -1,0 +1,46 @@
+import java.io.*;
+import java.net.*;
+
+public class ServerMultiplayer implements Runnable{
+	
+	Socket player1, player2;
+	TicTacData toSend = null, toReceive;
+	SocketAddress clientAddress1, clientAddress2;
+	int port1, port2;
+	String name;
+	
+	public ServerMultiplayer(Socket s1, Socket s2) {
+		this.player1 = s1;
+		this.player2 = s2;
+		this.clientAddress1 = player1.getRemoteSocketAddress();
+		this.clientAddress2 = player2.getRemoteSocketAddress();
+		this.port1 = player1.getPort();
+		this.port2 = player2.getPort();
+	}
+	
+	public void run() {
+		try {
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		} catch (EOFException e) { // needed to catch when client is done and closes socket
+			System.out.println("goodbye " + toReceive.getName() + ", the client with IP: " + clientAddress
+					+ " and port# " + port);
+			try {
+				clntSock.close(); // Close the socket. We are done with this client!
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

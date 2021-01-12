@@ -1,0 +1,135 @@
+import java.io.*;
+import java.net.*;
+
+public class ServerMultiplayer implements Runnable{
+	
+	Socket playerSocket1, playerSocket2;
+	TicTacData toSend1 = null, toSend2 = null, toReceive;
+	SocketAddress clientAddress1, clientAddress2;
+	int port1, port2;
+	String name;
+	boolean isOdd = true;
+	
+	public ServerMultiplayer(Socket s1, Socket s2) {
+		this.playerSocket1 = s1;
+		this.playerSocket2 = s2;
+		this.clientAddress1 = playerSocket1.getRemoteSocketAddress();
+		this.clientAddress2 = playerSocket2.getRemoteSocketAddress();
+		this.port1 = playerSocket1.getPort();
+		this.port2 = playerSocket2.getPort();
+	}
+	
+	public void run() {
+		try {
+			while(true) {
+				toSend1 = new TicTacData(isOdd);
+				isOdd = !isOdd;
+				toSend2 = new TicTacData(isOdd);
+				
+				sendDataBackToClient(playerSocket1,toSend1);
+				sendDataBackToClient(playerSocket2,toSend2);
+				
+				while(true) {
+					toReceive = toSend1.playerOdd ? receiveDataFromClient(playerSocket1) : receiveDataFromClient(playerSocket2);
+					boolean receiveIsOdd = toReceive.playerOdd;
+					
+					System.out.println(toReceive.getName() + "'s move received."); //testing
+					
+					if(toReceive.getBoard().checkWin()) {
+						if(toReceive.playerOdd) {
+							toReceive.oddWon = true;
+						} else {
+							toReceive.evenWon = true;
+						}
+					}
+					if(toReceive.getBoard().boardFull()) {
+						toReceive.draw = true;
+					}
+					
+					if(receiveIsOdd == toSend1.playerOdd) {
+						toSend1 = toReceive;
+						sendDataBackToClient(playerSocket2,toSend1);
+						System.out.println(toSend1.getName() + "'s move sending to opponent.");
+					} else {
+						toSend2 = toReceive;
+						sendDataBackToClient(playerSocket1,toSend2);
+					}
+					
+
+				}
+				
+				
+		
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+		} catch (EOFException e) { // needed to catch when client is done and closes socket
+			System.out.println("goodbye " + toReceive.getName() + ", the client with IP: " + clientAddress1
+					+ " and port# " + port1);
+			try {
+				playerSocket1.close(); // Close the socket. We are done with this client!
+				playerSocket2.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+
+	public static TicTacData receiveDataFromClient(Socket clntSock) throws IOException{
+		SocketAddress clientAddress = clntSock.getRemoteSocketAddress();
+		int port = clntSock.getPort();
+		
+		TicTacData fromClient = null;
+		
+		try {
+			InputStream is = clntSock.getInputStream();
+			ObjectInputStream ois = new ObjectInputStream(is);
+			fromClient = (TicTacData) ois.readObject();
+			
+		}  catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (EOFException e) { 
+			System.out.println("in receive EOF: goodbye client at " + clientAddress + " with port# " + port);
+			clntSock.close(); // Close the socket. We are done with this client!
+		}
+		catch (IOException e) {
+			System.out.println("in receive IO: goodbye client at " + clientAddress + " with port# " + port);
+			clntSock.close(); //
+		}
+		return fromClient;
+		
+	}
+	
+	public static void sendDataBackToClient(Socket clntSock, TicTacData fromClient ) throws IOException{
+		TicTacData toClient = null;
+		try {
+			OutputStream os = clntSock.getOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			toClient = fromClient;
+			oos.writeObject(toClient);
+
+		}  catch (EOFException e) { // needed to catch when client is done
+			System.out.println("in Send EOFException: goodbye client at " + clntSock.getRemoteSocketAddress() + " with port# " + clntSock.getPort());
+			clntSock.close(); // Close the socket. We are done with this client!
+		}
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("in Send IOException: goodbye client at " + clntSock.getRemoteSocketAddress() + " with port# " + clntSock.getPort());
+			clntSock.close(); //
+		}
+	}
+}
+
+

@@ -1,0 +1,13 @@
+import java.io.*;
+import java.net.*;
+
+public class ServerMultiplayer implements Runnable{
+	
+	public ServerMultiplayer(Socket s1, Socket s2) {
+		
+	}
+	
+	public void run() {
+		
+	}
+}

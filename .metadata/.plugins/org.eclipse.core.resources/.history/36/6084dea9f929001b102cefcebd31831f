@@ -1,0 +1,58 @@
+import java.io.*;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Client {
+	static final int DEFAULT_PORT = 5000;
+	static final String DEFAULT_IP = "127.0.0.1";
+	
+	public static void main(String args[]) throws IOException{
+		ArrayList<String> obj = new ArrayList<String>();
+		String name; 
+		Socket socket = null;
+		String server;
+		String stringPort = null;
+		InetAddress serverAddress; 
+		int servPort;
+		Scanner fromKeyboard = new Scanner(System.in);
+		
+		System.out.print("Enter computer name or IP address or press return to use default: ");
+		server = fromKeyboard.nextLine();
+		
+		if (server.length() == 0) {
+			server = DEFAULT_IP;
+		}
+
+		
+		System.out.print("Enter port number or press return to use default:");
+		stringPort = fromKeyboard.nextLine();
+		if (stringPort.length() == 0) {
+			servPort = DEFAULT_PORT;
+		} else {
+			servPort = Integer.parseInt(stringPort);
+		}
+		
+		try { 
+			if (servPort <= 0 || servPort > 65535)
+				throw new NumberFormatException();
+		} catch (NumberFormatException e) {
+			System.out.println("Illegal port number, " + servPort);
+			return;
+		}
+		
+		serverAddress = InetAddress.getByName(server); 
+		
+		try {
+			socket = new Socket(serverAddress, servPort);
+			TicTacData toSend, toReceive = null;
+			
+			System.out.println("Welcome to Number TIC TAC TOE!");
+			
+			
+		} catch (ConnectException e) {
+			System.out.println("Connection refused, probably no server running");
+		}
+	}
+}
+

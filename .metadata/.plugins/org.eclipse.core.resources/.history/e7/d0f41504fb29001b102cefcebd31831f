@@ -1,0 +1,94 @@
+import java.io.Serializable;
+import java.util.*;
+
+public class TicTacData implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
+	private GameBoard board;
+	String message, name;
+	boolean playerOdd, yourTurn;
+	boolean gameEnd, oddWon = false, evenWon = false, draw = false;
+	boolean playAgain = true;
+	
+	private List<Integer> oddRemain = new ArrayList<Integer>();
+	private List<Integer> evenRemain = new ArrayList<Integer>();
+	
+	public TicTacData(boolean odd) {
+		int i = 1;
+		this.board = new GameBoard();
+		while (i <= 8) {
+			oddRemain.add(i++);
+			evenRemain.add(i++);
+		}
+		oddRemain.add(9);
+		
+		this.playerOdd = odd;
+		this.gameEnd = false;
+		this.oddWon = false;
+		this.evenWon = false;
+		this.draw = false;
+	}
+	
+	public GameBoard getBoard() {
+		return board;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public void setMessage(String m) {
+		this.message = m;
+	}
+	
+	public String getMessage() {
+		return this.message;
+	}
+	
+	public void printMessage() {
+		System.out.println(this.message);
+	}
+	
+	public void setEnd() {
+		this.gameEnd = true;
+	}
+	
+	public List<Integer> getOddRemaining(){
+		return oddRemain;
+	}
+	
+	public List<Integer> getEvenRemaining(){
+		return evenRemain;
+	}
+	
+	public void setOddRemaining(int i) {
+		for(int n = 0 ;n < oddRemain.size(); n++) {
+			if(oddRemain.get(n) == i) {
+				oddRemain.remove(n);
+			}
+		}
+	}
+	
+	public void setEvenRemaining(int i) {
+		for(int n = 0 ;n < evenRemain.size(); n++) {
+			if(evenRemain.get(n) == i) {
+				evenRemain.remove(n);
+			}
+		}
+	}
+	
+	public void printRemain(boolean term) {
+		List<Integer> remain;
+		if(term) {
+			remain = oddRemain;
+		} else {
+			remain = evenRemain;
+		}
+		System.out.println(remain);
+	}
+	
+}
